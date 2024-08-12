@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package proto;
+option go_package = "github.com/orjanhsy/pong-in-terminal";
 
 service Game {
-  rpc Connect (ConnectRequest) returns (ConnectResponse) 
-  rpc Stream (stream Request) returns  (stream Response)
+  rpc Connect (ConnectRequest) returns (ConnectResponse) {}
+  rpc Stream (StreamRequest) returns  (StreamResponse) {}
 }
 
 
@@ -35,7 +35,7 @@ message Ball {
 // actions
 
 message Move {
-  Direction direction
+  Direction direction = 1;
 }
 
 message ConnectRequest {
@@ -46,9 +46,10 @@ message ConnectResponse {
   string token = 1;
 }
 
+message StreamRequest {
+  string id = 1;
+}
 
-
-
-
-
-
+message StreamResponse {
+  string id = 1;
+}
