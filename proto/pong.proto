@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package proto;
+
+service Game {
+  rpc Connect (ConnectRequest) returns (ConnectResponse) 
+  rpc Stream (stream Request) returns  (stream Response)
+}
+
+
+// types
+
+enum Direction {
+  UP = 0;
+  DOWN = 1;
+  LEFT = 2;
+  RIGHT = 3;
+}
+
+message Coordinate {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message Bat {
+  int32 id = 1;
+  Coordinate pos = 2;
+}
+
+message Ball {
+  int32 dir = 1;
+  Coordinate pos = 2;
+}
+
+// actions
+
+message Move {
+  Direction direction
+}
+
+message ConnectRequest {
+  string id = 1;
+}
+
+message ConnectResponse {
+  string token = 1;
+}
+
+
+
+
+
+
+
