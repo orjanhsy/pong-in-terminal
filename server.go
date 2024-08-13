@@ -1,13 +1,17 @@
 package main
 
 import (
+	"log"
 	"context"
 	"errors"
+	"flag"
+	"fmt"
 	"net"
 	"sync"
 
 	"github.com/google/uuid"
 	pb "github.com/orjanhsy/pong-in-terminal/proto"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -45,8 +49,10 @@ func (s *GameServer) Connect(ctx context.Context, req *pb.ConnectRequest) (*pb.C
 	}, nil
 }
 
-func (s *GameServer) Stream() {
-
+func (s *GameServer) Stream(ctx context.Context, req *pb.StreamRequest) (*pb.StreamResponse, error) {
+	return &pb.StreamResponse{
+		Token: uuid.New().String(),
+	}, nil
 }
 
 func NewGameServer() *GameServer {
@@ -59,3 +65,23 @@ func NewGameServer() *GameServer {
 }
 
 
+var (
+	port = flag.Int("port", 50052, "The server port")
+)
+
+func main() {
+	flag.Parse()
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	s := grpc.NewServer()
+	serv := NewGameServer()
+	pb.RegisterGameServer(s, serv)
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+
+}
