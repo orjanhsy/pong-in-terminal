@@ -21,7 +21,6 @@ type client struct {
 type GameServer struct {
 	clients map[uuid.UUID]*client
 	mu sync.Mutex
-	lis map[net.Listener]bool
 	// password string // (not MVP)
 
 	pb.UnimplementedGameServer
@@ -33,6 +32,7 @@ func (s *GameServer) Connect(ctx context.Context, req *pb.ConnectRequest) (*pb.C
 		return nil, errors.New("Server is full")
 	}
 
+	// add new the newly connected client 
 	s.mu.Lock()
 	token := uuid.New()
 	s.clients[token] = &client{
@@ -47,6 +47,15 @@ func (s *GameServer) Connect(ctx context.Context, req *pb.ConnectRequest) (*pb.C
 
 func (s *GameServer) Stream() {
 
+}
+
+func NewGameServer() *GameServer {
+	s := &GameServer{
+		clients: make(map[uuid.UUID]*client),
+		mu: sync.Mutex{},
+	}
+
+	return s
 }
 
 
