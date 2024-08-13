@@ -77,10 +77,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	log.Printf("server listening on: %d", port)
 
 	s := grpc.NewServer()
-	serv := NewGameServer()
-	pb.RegisterGameServer(s, serv)
+	server := NewGameServer()
+	pb.RegisterGameServer(s, server)
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

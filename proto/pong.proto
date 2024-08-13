@@ -20,7 +20,7 @@ message Coordinate {
   int32 y = 2;
 }
 
-message Bat {
+message Paddle {
   int32 id = 1;
   Coordinate pos = 2;
 }
