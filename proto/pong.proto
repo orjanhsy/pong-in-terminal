@@ -13,8 +13,6 @@ service Game {
 enum Direction {
   UP = 0;
   DOWN = 1;
-  LEFT = 2;
-  RIGHT = 3;
 }
 
 message Coordinate {
@@ -24,11 +22,6 @@ message Coordinate {
 
 message Bat {
   int32 id = 1;
-  Coordinate pos = 2;
-}
-
-message Ball {
-  int32 dir = 1;
   Coordinate pos = 2;
 }
 
@@ -51,5 +44,5 @@ message StreamRequest {
 }
 
 message StreamResponse {
-  string id = 1;
+  string token = 1;
 }
