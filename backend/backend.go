@@ -1,38 +1,56 @@
 package backend
 
-import "github.com/gdamore/tcell"
+import (
+	"log"
+	"os"
+
+	"github.com/gdamore/tcell"
+)
 
 
 type Game struct {
-	player1 *Player
-	player2 *Player
+	Player1 *Player
+	Player2 *Player
 
-	screen tcell.Screen
+	Screen tcell.Screen
 }
 
+func (g *Game) Quit() {
+	g.Screen.Fini()
+	os.Exit(0)
+}
 
 func NewGame() *Game {
+	s, err := tcell.NewScreen()
+	if err != nil {
+		log.Fatalf("failed creating screen: %v", err)
+	}
+	if err := s.Init(); err != nil {
+		log.Fatalf("failed initializing screen: %v", err)
+	}
+
 	return &Game{
-		player1: NewPlayer(),
-		player2: NewPlayer(),
+		Player1: NewPlayer(),
+		Player2: NewPlayer(),
+		Screen: s,
 	}
 }
 
 type Player struct {
-	paddle *Paddle
-	score int
+	Paddle *Paddle
+	Score int
 }
 
 func NewPlayer() *Player {
 	return &Player{
-		paddle: &Paddle{pos: 25}, // 25 is placeholder, needs to be centre of y axis of screen
-		score: 0,
+		Paddle: &Paddle{Pos: 25}, // 25 is placeholder, needs to be centre of y axis of screen
+		Score: 0,
 	}
 }
 
 
 type Paddle struct {
-	pos int // moves only across y axis
+	Pos int // moves only across y axis
 }
 
 type Direction int
@@ -46,9 +64,9 @@ const (
 func (p *Paddle) Move(dir Direction) {
 	switch dir {
 	case UP:
-		p.pos--	
+		p.Pos--	
 	case DOWN:
-		p.pos++
+		p.Pos++
 	}
 }
 
