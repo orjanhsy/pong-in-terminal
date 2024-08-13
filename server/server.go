@@ -44,6 +44,8 @@ func (s *GameServer) Connect(ctx context.Context, req *pb.ConnectRequest) (*pb.C
 	}
 	s.mu.Unlock()
 
+	log.Printf("%s connected to server", token.String())
+
 	return &pb.ConnectResponse{
 		Token: token.String(),
 	}, nil
