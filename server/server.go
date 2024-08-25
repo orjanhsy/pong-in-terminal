@@ -51,10 +51,8 @@ func (s *GameServer) Connect(ctx context.Context, req *pb.ConnectRequest) (*pb.C
 	}, nil
 }
 
-func (s *GameServer) Stream(ctx context.Context, req *pb.StreamRequest) (*pb.StreamResponse, error) {
-	return &pb.StreamResponse{
-		Token: uuid.New().String(),
-	}, nil
+func (s *GameServer) Stream(srv pb.Game_StreamServer)  error {
+	 return nil
 }
 
 func NewGameServer() *GameServer {
