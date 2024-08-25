@@ -4,7 +4,7 @@ option go_package = "github.com/orjanhsy/pong-in-terminal";
 
 service Game {
   rpc Connect (ConnectRequest) returns (ConnectResponse) {}
-  rpc Stream (StreamRequest) returns  (StreamResponse) {}
+  rpc Stream (stream StreamRequest) returns  (stream StreamResponse) {}
 }
 
 

@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GameClient interface {
 	Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectResponse, error)
-	Stream(ctx context.Context, in *StreamRequest, opts ...grpc.CallOption) (*StreamResponse, error)
+	Stream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StreamRequest, StreamResponse], error)
 }
 
 type gameClient struct {
@@ -49,22 +49,25 @@ func (c *gameClient) Connect(ctx context.Context, in *ConnectRequest, opts ...gr
 	return out, nil
 }
 
-func (c *gameClient) Stream(ctx context.Context, in *StreamRequest, opts ...grpc.CallOption) (*StreamResponse, error) {
+func (c *gameClient) Stream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StreamRequest, StreamResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StreamResponse)
-	err := c.cc.Invoke(ctx, Game_Stream_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &Game_ServiceDesc.Streams[0], Game_Stream_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[StreamRequest, StreamResponse]{ClientStream: stream}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Game_StreamClient = grpc.BidiStreamingClient[StreamRequest, StreamResponse]
 
 // GameServer is the server API for Game service.
 // All implementations must embed UnimplementedGameServer
 // for forward compatibility.
 type GameServer interface {
 	Connect(context.Context, *ConnectRequest) (*ConnectResponse, error)
-	Stream(context.Context, *StreamRequest) (*StreamResponse, error)
+	Stream(grpc.BidiStreamingServer[StreamRequest, StreamResponse]) error
 	mustEmbedUnimplementedGameServer()
 }
 
@@ -78,8 +81,8 @@ type UnimplementedGameServer struct{}
 func (UnimplementedGameServer) Connect(context.Context, *ConnectRequest) (*ConnectResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
 }
-func (UnimplementedGameServer) Stream(context.Context, *StreamRequest) (*StreamResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Stream not implemented")
+func (UnimplementedGameServer) Stream(grpc.BidiStreamingServer[StreamRequest, StreamResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method Stream not implemented")
 }
 func (UnimplementedGameServer) mustEmbedUnimplementedGameServer() {}
 func (UnimplementedGameServer) testEmbeddedByValue()              {}
@@ -120,23 +123,12 @@ func _Game_Connect_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Game_Stream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StreamRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GameServer).Stream(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Game_Stream_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GameServer).Stream(ctx, req.(*StreamRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+func _Game_Stream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GameServer).Stream(&grpc.GenericServerStream[StreamRequest, StreamResponse]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Game_StreamServer = grpc.BidiStreamingServer[StreamRequest, StreamResponse]
 
 // Game_ServiceDesc is the grpc.ServiceDesc for Game service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -149,11 +141,14 @@ var Game_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Connect",
 			Handler:    _Game_Connect_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "Stream",
-			Handler:    _Game_Stream_Handler,
+			StreamName:    "Stream",
+			Handler:       _Game_Stream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/pong.proto",
 }
