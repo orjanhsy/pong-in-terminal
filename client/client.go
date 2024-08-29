@@ -21,13 +21,14 @@ var(
 )
 
 type GameClient struct {
-	currentPlayer uuid.UUID
-	game string
+	CurrentPlayer uuid.UUID
+	Game string
+	Stream pb.Game_StreamClient
 }
 
 func NewGameClient() *GameClient {
 	return &GameClient{
-		game: "pong",
+		Game: "pong",
 	}
 }
 
@@ -40,18 +41,20 @@ func main() {
 	}
 	defer conn.Close()
 
-	c := pb.NewGameClient(conn)
+	gc := pb.NewGameClient(conn)
 	client := NewGameClient()
 
 	playerId := uuid.New()
-	err = client.Connect(c, playerId)
+	err = client.Connect(gc, playerId)
 	if err != nil {
 		log.Fatalf("did not fulfill connectRequest: %v", err)
 	}
+
+	client.Start()
 }
 
 
-func (cc *GameClient) Connect(gc pb.GameClient, playerId uuid.UUID) error {
+func (c *GameClient) Connect(gc pb.GameClient, playerId uuid.UUID) error {
 	req := &pb.ConnectRequest{
 		Id: playerId.String(),
 	}
@@ -61,10 +64,29 @@ func (cc *GameClient) Connect(gc pb.GameClient, playerId uuid.UUID) error {
 		log.Fatalf("did not connect: %v", err)
 	}
 	log.Printf("Connected with response: %s", r.String())
+
+	stream, err := gc.Stream(context.Background())
+	if err != nil {
+		return err 
+	}
+
+	c.Stream = stream
 	return nil
 }
 
+func (c *GameClient) Start() {
+	go func() {
+		for {
+			resp, err := c.Stream.Recv()
+			if err != nil {
+				log.Printf("Don't work lol")
+			}
+			log.Printf("Response: %s", resp.Token)
+		}
+	}()
+}
 
-// func (cc *GameClient) Stream(ctx context.Context, req *pb.ConnectRequest) (*pb.ConnectResponse, error) {
 
-// }
+
+
+

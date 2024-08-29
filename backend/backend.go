@@ -11,7 +11,7 @@ import (
 type Game struct {
 	Player1 *Player
 	Player2 *Player
-
+	
 	Screen tcell.Screen
 }
 
@@ -59,7 +59,6 @@ const (
 	UP Direction = iota
 	DOWN
 )
-
 
 func (p *Paddle) Move(dir Direction) {
 	switch dir {

@@ -20,6 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// types
 type Direction int32
 
 const (
@@ -176,6 +177,7 @@ func (x *Paddle) GetPos() *Coordinate {
 	return nil
 }
 
+// actions
 type Move struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
