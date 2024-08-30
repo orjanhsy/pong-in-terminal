@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/orjanhsy/pong-in-terminal/proto/pb";
+
+service PongService {
+  rpc UpdatePaddlePosition(PaddleUpdateRequest) returns (PaddleUpdateResponse) {}
+
+  rpc StreamGameState(GameStateRequest) returns (stream GameStateResponse) {}
+}
+
+message Coordinate {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message PaddleUpdateRequest {
+  string player_id = 1;
+  Coordinate paddle_position = 2; 
+}
+
+message PaddleUpdateResponse {
+  string status = 1;
+}
+
+message GameStateRequest {
+  string player_id = 1;
+}
+
+message GameStateResponse {
+  Coordinate ball_pos = 1;
+  Coordinate p1_pos = 2;
+  Coordinate p2_pos = 3;
+  int32 p1_score = 4;
+  int32 p2_score = 5;
+}
