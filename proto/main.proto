@@ -15,9 +15,15 @@ message Coordinate {
   int32 y = 2;
 }
 
+enum Direction {
+  UP = 0;
+  DOWN = 1;
+  STOP = 2;
+}
+
 message PaddleUpdateRequest {
   string player_id = 1;
-  Coordinate paddle_position = 2; 
+  Direction direction = 2;
 }
 
 message PaddleUpdateResponse {
