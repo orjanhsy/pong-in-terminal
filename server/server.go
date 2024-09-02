@@ -1,0 +1,100 @@
+package main
+
+import (
+	"context"
+	"log"
+	"net"
+	"time"
+
+	"github.com/orjanhsy/pong-in-terminal/game"
+	pb "github.com/orjanhsy/pong-in-terminal/proto"
+	"google.golang.org/grpc"
+)
+
+const port = ":50051"
+
+type client struct {
+	streamServer pb.PongService_StreamGameStateServer
+	id string
+}
+
+type GameServer struct {
+	pb.UnimplementedPongServiceServer
+	game *game.Game
+	clients map[string]*client
+}
+
+func NewGameServer() *GameServer {
+	gs := &GameServer{
+		game: game.NewGame(),
+	}
+	return gs
+}
+
+func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongService_StreamGameStateServer) error {
+	clientId := req.PlayerId
+	gs.clients[clientId] = &client{
+		streamServer: stream,
+		id: clientId,
+	}
+
+	for {
+		response := &pb.GameStateResponse{
+			BallPos: &pb.Coordinate{
+				X: int32(gs.game.BallPos.X),
+				Y: int32(gs.game.BallPos.Y) ,
+			},
+			P1Pos: &pb.Coordinate{
+				X: int32(gs.game.P1Pos.X),
+				Y: int32(gs.game.P1Pos.Y) ,
+			},
+			P2Pos: &pb.Coordinate{
+				X: int32(gs.game.P2Pos.X),
+				Y: int32(gs.game.P2Pos.Y) ,
+			},
+			P1Score: int32(gs.game.P1Score),
+			P2Score: int32(gs.game.P2Score),
+		}
+
+		if err := stream.Send(response); err != nil {
+			log.Printf("Error sending game state to client %s: %v", clientId, err)
+			delete(gs.clients, clientId)
+			return err
+		}
+
+		time.Sleep(time.Second /60)
+	}
+}
+
+
+func (gs *GameServer) UpdatePaddlePosition(ctx context.Context, req *pb.PaddleUpdateRequest) (*pb.PaddleUpdateResponse, error) {
+    direction := game.STOP
+    if req.PaddlePosition.Y < int32(gs.game.P1Pos.Y) {
+        direction = game.UP
+    } else if req.PaddlePosition.Y > int32(gs.game.P1Pos.Y) {
+        direction = game.DOWN
+    }
+
+    gs.game.MoveChannel <- game.Move{
+        PlayerID: req.PlayerId,
+        Direction: direction,
+    }
+
+    return &pb.PaddleUpdateResponse{Status: "Paddle position updated successfully"}, nil
+}
+
+func main() {
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterPongServiceServer(grpcServer, NewGameServer())
+
+	log.Printf("gRPC server running on port: %s", port)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve: %v", err)
+	}
+}

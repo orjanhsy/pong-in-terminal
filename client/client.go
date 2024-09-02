@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"context"
@@ -13,7 +13,6 @@ const adress = "localhost:50051"
 
 type GameClient struct {
 }
-
 
 
 func main() {
