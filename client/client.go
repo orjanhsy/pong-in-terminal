@@ -40,7 +40,13 @@ func (gc *GameClient) Start() {
 	
 	go gc.listenForPlayerInput()
 
-	gc.recieveGameState()
+	go func() {
+		if err := gc.recieveGameState(); err != nil {
+			log.Printf("Error recieving game state: %v", err)
+		}
+	}()
+
+	select {}
 }
 
 func (gc *GameClient) Quit() {
@@ -50,6 +56,7 @@ func (gc *GameClient) Quit() {
 }
 
 func (gc *GameClient) listenForPlayerInput() {
+	log.Println("Listening for input")
 	for {
 		ev := gc.screen.PollEvent()
 
@@ -58,8 +65,10 @@ func (gc *GameClient) listenForPlayerInput() {
 		case *tcell.EventKey:
 			switch {  
 			case	ev.Key() == tcell.KeyUp, ev.Rune() == 'k':
+				gc.screen.SetContent(50, 50, ev.Rune(), nil, tcell.StyleDefault)
 				gc.sendPaddleUpdate(pb.Direction_UP)	
 			case ev.Key() == tcell.KeyDown, ev.Rune() == 'j':
+				gc.screen.SetContent(50, 50, ev.Rune(), nil, tcell.StyleDefault)
 				gc.sendPaddleUpdate(pb.Direction_DOWN)
 			case ev.Key() == tcell.KeyCtrlC, ev.Rune() == 'q':
 				gc.Quit()
@@ -75,14 +84,13 @@ func (gc *GameClient) sendPaddleUpdate(dir pb.Direction) {
 		Direction: dir,
 	}
 
-	resp, err := gc.grpcClient.UpdatePaddlePosition(context.Background(), req)
+	_, err := gc.grpcClient.UpdatePaddlePosition(context.Background(), req)
 	if err != nil {
 		log.Fatalf("Could not update paddle position: %v", err)
 	}
-	log.Printf("Reponse of UpdatePaddlePosition: %s", resp.Status)
 }
 
-func (gc *GameClient) recieveGameState() {
+func (gc *GameClient) recieveGameState() error {
 	req := &pb.GameStateRequest{PlayerId: gc.playerId}
 	stream, err := gc.grpcClient.StreamGameState(context.Background(), req) 
 	if err != nil {
@@ -92,11 +100,14 @@ func (gc *GameClient) recieveGameState() {
 	for {
 		resp, err := stream.Recv()
 		if err != nil {
-			log.Fatalf("Error while recieving stream: %v", err)
-			break
+			if err.Error() == "EOF" {
+				break
+			}
+			return err
 		}
 		gc.drawGameState(resp)
 	}
+	return nil
 }
 
 func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {

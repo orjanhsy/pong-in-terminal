@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gdamore/tcell"
+	"github.com/orjanhsy/pong-in-terminal/proto"
 )
 
 type Game struct {
@@ -26,7 +27,7 @@ type Coordinate struct {
 
 type Move struct {
 	PlayerID string
-	Direction Direction
+	Direction pb.Direction
 }
 
 type Direction int
@@ -103,12 +104,12 @@ func (game *Game) watchPlayerInput() {
 			case	ev.Key() == tcell.KeyUp, ev.Rune() == 'k':
 				game.MoveChannel <- Move{
 					PlayerID: "1",
-					Direction: UP,
+					Direction: pb.Direction_DOWN,
 				}
 			case ev.Key() == tcell.KeyDown, ev.Rune() == 'j':
 				game.MoveChannel <- Move{
 					PlayerID: "1",
-					Direction: DOWN,
+					Direction: pb.Direction_DOWN,
 				}
 			case ev.Key() == tcell.KeyCtrlC, ev.Rune() == 'q':
 				game.Quit()
@@ -117,21 +118,21 @@ func (game *Game) watchPlayerInput() {
 	}
 }
 
-func (game *Game) MovePaddle(playerID string, dir Direction) {
+func (game *Game) MovePaddle(playerID string, dir pb.Direction) {
 	switch playerID {
 	case "1":
 		switch dir {
-		case UP:
+		case pb.Direction_UP:
 			game.P1Pos.Y --
-		case DOWN:
+		case pb.Direction_DOWN:
 			game.P1Pos.Y ++
 		default:
 		}
 	case "2":
 		switch dir {
-		case UP:
+		case pb.Direction_UP:
 			game.P2Pos.Y --
-		case DOWN:
+		case pb.Direction_DOWN:
 			game.P2Pos.Y ++
 		default:
 		}

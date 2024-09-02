@@ -25,8 +25,11 @@ type GameServer struct {
 }
 
 func NewGameServer() *GameServer {
+	game := game.NewGame()
+	game.Init()
 	gs := &GameServer{
-		game: game.NewGame(),
+		game: game,
+		clients: make(map[string]*client),
 	}
 	return gs
 }
@@ -68,16 +71,9 @@ func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongSe
 
 
 func (gs *GameServer) UpdatePaddlePosition(ctx context.Context, req *pb.PaddleUpdateRequest) (*pb.PaddleUpdateResponse, error) {
-    direction := game.STOP
-    if req.PaddlePosition.Y < int32(gs.game.P1Pos.Y) {
-        direction = game.UP
-    } else if req.PaddlePosition.Y > int32(gs.game.P1Pos.Y) {
-        direction = game.DOWN
-    }
-
     gs.game.MoveChannel <- game.Move{
         PlayerID: req.PlayerId,
-        Direction: direction,
+        Direction: req.Direction,
     }
 
     return &pb.PaddleUpdateResponse{Status: "Paddle position updated successfully"}, nil
