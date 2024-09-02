@@ -4,6 +4,7 @@ go 1.22.2
 
 require (
 	github.com/gdamore/tcell v1.4.0
+	github.com/google/uuid v1.6.0
 	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2
 )

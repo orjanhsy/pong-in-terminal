@@ -122,17 +122,17 @@ func (game *Game) MovePaddle(playerID string, dir Direction) {
 	case "1":
 		switch dir {
 		case UP:
-			game.P1Pos.Y ++
-		case DOWN:
 			game.P1Pos.Y --
+		case DOWN:
+			game.P1Pos.Y ++
 		default:
 		}
 	case "2":
 		switch dir {
 		case UP:
-			game.P2Pos.Y ++
-		case DOWN:
 			game.P2Pos.Y --
+		case DOWN:
+			game.P2Pos.Y ++
 		default:
 		}
 	}
