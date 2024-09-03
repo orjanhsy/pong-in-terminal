@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gdamore/tcell"
+	"github.com/google/uuid"
 	pb "github.com/orjanhsy/pong-in-terminal/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,10 +18,10 @@ const adress = "localhost:50051"
 type GameClient struct {
 	screen tcell.Screen
 	grpcClient pb.PongServiceClient
-	playerId string
+	playerId uuid.UUID
 }
 
-func NewGameClient(playerId string, grpcClient pb.PongServiceClient) *GameClient {
+func NewGameClient(playerId uuid.UUID, grpcClient pb.PongServiceClient) *GameClient {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatalf("Failed to create tcell screen: %v", err)
@@ -80,7 +81,7 @@ func (gc *GameClient) listenForPlayerInput() {
 
 func (gc *GameClient) sendPaddleUpdate(dir pb.Direction) {
 	req := &pb.PaddleUpdateRequest{
-		PlayerId: gc.playerId,
+		PlayerId: gc.playerId.String(),
 		Direction: dir,
 	}
 
@@ -91,7 +92,7 @@ func (gc *GameClient) sendPaddleUpdate(dir pb.Direction) {
 }
 
 func (gc *GameClient) recieveGameState() error {
-	req := &pb.GameStateRequest{PlayerId: gc.playerId}
+	req := &pb.GameStateRequest{PlayerId: gc.playerId.String()}
 	stream, err := gc.grpcClient.StreamGameState(context.Background(), req) 
 	if err != nil {
 		log.Fatalf("Error while recieving stream: %v", err)
@@ -156,8 +157,10 @@ func main() {
 	}
 	defer conn.Close()
 
+	clientId := uuid.New()
+
 	grpcClient := pb.NewPongServiceClient(conn)
-	client := NewGameClient("1", grpcClient)
+	client := NewGameClient(clientId, grpcClient)
 	defer client.Quit()
 	client.Start()
 }

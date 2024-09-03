@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/orjanhsy/pong-in-terminal/game"
 	pb "github.com/orjanhsy/pong-in-terminal/proto"
 	"google.golang.org/grpc"
@@ -15,13 +16,13 @@ const port = ":50051"
 
 type client struct {
 	streamServer pb.PongService_StreamGameStateServer
-	id string
+	id uuid.UUID
 }
 
 type GameServer struct {
 	pb.UnimplementedPongServiceServer
 	game *game.Game
-	clients map[string]*client
+	clients map[uuid.UUID]*client
 }
 
 func NewGameServer() *GameServer {
@@ -29,16 +30,26 @@ func NewGameServer() *GameServer {
 	game.Init()
 	gs := &GameServer{
 		game: game,
-		clients: make(map[string]*client),
+		clients: make(map[uuid.UUID]*client),
 	}
 	return gs
 }
 
 func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongService_StreamGameStateServer) error {
-	clientId := req.PlayerId
+	clientId, err := uuid.Parse(req.PlayerId)
+	if err != nil {
+		log.Fatalf("Could not parse client ID when streaming state: %v", err)
+	}
+
 	gs.clients[clientId] = &client{
 		streamServer: stream,
-		id: clientId,
+		id: clientId, 
+	}
+
+	if gs.game.P1 == uuid.Nil {
+		gs.game.P1 = clientId
+	} else {
+		gs.game.P2 = clientId
 	}
 
 	for {
@@ -71,12 +82,16 @@ func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongSe
 
 
 func (gs *GameServer) UpdatePaddlePosition(ctx context.Context, req *pb.PaddleUpdateRequest) (*pb.PaddleUpdateResponse, error) {
-    gs.game.MoveChannel <- game.Move{
-        PlayerID: req.PlayerId,
-        Direction: req.Direction,
-    }
+	id, err :=	uuid.Parse(req.PlayerId)
+	if err != nil {
+		log.Fatalf("Failed to parse ID when updateing paddle: %v", err)
+	}
+  gs.game.MoveChannel <- game.Move{
+      PlayerID: id,
+      Direction: req.Direction,
+  }
 
-    return &pb.PaddleUpdateResponse{Status: "Paddle position updated successfully"}, nil
+  return &pb.PaddleUpdateResponse{Status: "Paddle position updated successfully"}, nil
 }
 
 func main() {

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gdamore/tcell"
+	"github.com/google/uuid"
 	"github.com/orjanhsy/pong-in-terminal/proto"
 )
 
@@ -14,6 +15,8 @@ type Game struct {
 	P2Pos Coordinate 
 	P1Score int
 	P2Score int
+	P1 uuid.UUID
+	P2 uuid.UUID
 
 	MoveChannel chan Move
 	Screen tcell.Screen
@@ -25,7 +28,7 @@ type Coordinate struct {
 }
 
 type Move struct {
-	PlayerID string
+	PlayerID uuid.UUID
 	Direction pb.Direction
 }
 
@@ -105,9 +108,9 @@ func (game *Game) listenForClose() {
 	}
 }
 
-func (game *Game) MovePaddle(playerID string, dir pb.Direction) {
+func (game *Game) MovePaddle(playerID uuid.UUID, dir pb.Direction) {
 	switch playerID {
-	case "1":
+	case game.P2:
 		switch dir {
 		case pb.Direction_UP:
 			game.P1Pos.Y --
@@ -115,7 +118,7 @@ func (game *Game) MovePaddle(playerID string, dir pb.Direction) {
 			game.P1Pos.Y ++
 		default:
 		}
-	case "2":
+	case game.P1:
 		switch dir {
 		case pb.Direction_UP:
 			game.P2Pos.Y --
