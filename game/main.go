@@ -3,7 +3,6 @@ package game
 import (
 	"log"
 	"os"
-	"fmt"
 
 	"github.com/gdamore/tcell"
 	"github.com/orjanhsy/pong-in-terminal/proto"
@@ -126,43 +125,3 @@ func (game *Game) MovePaddle(playerID string, dir pb.Direction) {
 		}
 	}
 }
-
-func (game *Game) DrawObjects() {
-	game.Screen.Clear()
-
-	// menu
-	ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", game.BallPos.X, game.BallPos.Y)
-	for i, r := range ballPos {
-		game.Screen.SetContent(i, 0, r, nil, tcell.StyleDefault)
-	}
-
-	p1Pos := fmt.Sprintf("Current p1-position: (%d, %d)\n", game.P1Pos.X, game.P1Pos.Y)
-	for i, r := range p1Pos {
-		game.Screen.SetContent(i, 1, r, nil, tcell.StyleDefault)
-	}
-
-	p2Pos := fmt.Sprintf("Current p2-position: (%d, %d)\n", game.P2Pos.X, game.P2Pos.Y)
-	for i, r := range p2Pos {
-		game.Screen.SetContent(i, 2, r, nil, tcell.StyleDefault)
-	}
-
-	// ball
-	x,y := game.BallPos.X, game.BallPos.Y
-	game.Screen.SetContent(x, y, '*', nil, tcell.StyleDefault)
-
-	// paddles 
-	// p1
-	x, y = game.P1Pos.X, game.P1Pos.Y
-	for i := -1; i <= 1; i++ {
-		game.Screen.SetContent(x, y+i, '|', nil, tcell.StyleDefault)
-	}
-	//p2
-	x, y = game.P2Pos.X, game.P2Pos.Y
-	for i := -1; i <= 1; i++ {
-		game.Screen.SetContent(x, y+i, '|', nil, tcell.StyleDefault)
-	}
-
-	game.Screen.Show()
-}
-
-
