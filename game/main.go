@@ -77,7 +77,7 @@ func (game *Game) Init() {
 }
 
 func (game *Game) Start() {
-	go game.watchPlayerInput()
+	go game.listenForClose()
 	go game.performPlayerMoves()
 }
 
@@ -93,25 +93,13 @@ func (game *Game) performPlayerMoves() {
 	}
 }
 
-func (game *Game) watchPlayerInput() {
+func (game *Game) listenForClose() {
 	for {
 		ev := game.Screen.PollEvent()
 
 		switch ev := ev.(type){
-		case *tcell.EventResize:
 		case *tcell.EventKey:
-			switch {  
-			case	ev.Key() == tcell.KeyUp, ev.Rune() == 'k':
-				game.MoveChannel <- Move{
-					PlayerID: "1",
-					Direction: pb.Direction_DOWN,
-				}
-			case ev.Key() == tcell.KeyDown, ev.Rune() == 'j':
-				game.MoveChannel <- Move{
-					PlayerID: "1",
-					Direction: pb.Direction_DOWN,
-				}
-			case ev.Key() == tcell.KeyCtrlC, ev.Rune() == 'q':
+			if ev.Key() == tcell.KeyCtrlC || ev.Rune() == 'q'{
 				game.Quit()
 			}
 		}

@@ -146,7 +146,6 @@ func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	}
 
 	gc.screen.Show()
-
 }
 
 
