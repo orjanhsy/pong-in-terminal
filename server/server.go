@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -12,7 +13,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-const port = ":50051"
+const (
+	maxClients = 2
+	port = ":50051"
+)
 
 type client struct {
 	streamServer pb.PongService_StreamGameStateServer
@@ -39,6 +43,10 @@ func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongSe
 	clientId, err := uuid.Parse(req.PlayerId)
 	if err != nil {
 		log.Fatalf("Could not parse client ID when streaming state: %v", err)
+	}
+
+	if len(gs.clients) >= maxClients {
+		return fmt.Errorf("Server if full (%d/2)", len(gs.clients))
 	}
 
 	gs.clients[clientId] = &client{
