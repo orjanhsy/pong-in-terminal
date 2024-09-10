@@ -66,10 +66,8 @@ func (gc *GameClient) listenForPlayerInput() {
 		case *tcell.EventKey:
 			switch {  
 			case	ev.Key() == tcell.KeyUp, ev.Rune() == 'k':
-				gc.screen.SetContent(50, 50, ev.Rune(), nil, tcell.StyleDefault)
 				gc.sendPaddleUpdate(pb.Direction_UP)	
 			case ev.Key() == tcell.KeyDown, ev.Rune() == 'j':
-				gc.screen.SetContent(50, 50, ev.Rune(), nil, tcell.StyleDefault)
 				gc.sendPaddleUpdate(pb.Direction_DOWN)
 			case ev.Key() == tcell.KeyCtrlC, ev.Rune() == 'q':
 				gc.Quit()
