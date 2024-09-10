@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math/rand"
 	"log"
 	"os"
 
@@ -10,7 +11,7 @@ import (
 )
 
 type Game struct {
-	BallPos Coordinate 
+	Ball Ball
 	P1Pos Coordinate 
 	P2Pos Coordinate 
 	P1Score int
@@ -20,6 +21,16 @@ type Game struct {
 
 	MoveChannel chan Move
 	Screen tcell.Screen
+}
+
+type Ball struct {
+	Pos Coordinate
+	Velo Velocity
+}
+
+type Velocity struct {
+	X int
+	Y int
 }
 
 type Coordinate struct {
@@ -40,14 +51,25 @@ const (
 	STOP
 )
 
+func (b *Ball) Init() {
+	b.Pos = Coordinate{X: 0, Y: 0} // this needs to be middle of screen, eventually
+
+	veloX := 2 * rand.Intn(2) - 1
+	veloY := rand.Intn(5) - 2
+	b.Velo = Velocity{X: veloX, Y: veloY}
+}
+
 func NewGame() *Game {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatalf("Failed to create new screen: %v", err)
 	}
+	
+	ball := Ball{}
+	ball.Init()
 
 	newGame := &Game{
-		BallPos: Coordinate{0, 0},
+		Ball: ball,
 		P1Pos: Coordinate{0, 0},
 		P2Pos: Coordinate{0, 0},
 		P1Score: 0,
