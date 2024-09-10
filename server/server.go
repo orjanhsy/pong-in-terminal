@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/orjanhsy/pong-in-terminal/game"
+	"github.com/orjanhsy/pong-in-terminal/backend"
 	pb "github.com/orjanhsy/pong-in-terminal/proto"
 	"google.golang.org/grpc"
 )
@@ -25,12 +25,12 @@ type client struct {
 
 type GameServer struct {
 	pb.UnimplementedPongServiceServer
-	game *game.Game
+	game *backend.Game
 	clients map[uuid.UUID]*client
 }
 
 func NewGameServer() *GameServer {
-	game := game.NewGame()
+	game := backend.NewGame()
 	game.Init()
 	gs := &GameServer{
 		game: game,
@@ -94,7 +94,7 @@ func (gs *GameServer) UpdatePaddlePosition(ctx context.Context, req *pb.PaddleUp
 	if err != nil {
 		log.Fatalf("Failed to parse ID when updateing paddle: %v", err)
 	}
-  gs.game.MoveChannel <- game.Move{
+  gs.game.MoveChannel <- backend.Move{
       PlayerID: id,
       Direction: req.Direction,
   }
