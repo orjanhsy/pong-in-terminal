@@ -63,8 +63,8 @@ func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongSe
 	for {
 		response := &pb.GameStateResponse{
 			BallPos: &pb.Coordinate{
-				X: int32(gs.game.BallPos.X),
-				Y: int32(gs.game.BallPos.Y) ,
+				X: int32(gs.game.Ball.Pos.X),
+				Y: int32(gs.game.Ball.Pos.Y) ,
 			},
 			P1Pos: &pb.Coordinate{
 				X: int32(gs.game.P1Pos.X),

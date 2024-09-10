@@ -20,7 +20,8 @@ type Game struct {
 	P1 uuid.UUID
 	P2 uuid.UUID
 
-	yBound int
+	ScreenH float64
+	ScreenW float64
 
 	MoveChannel chan Move
 	Screen tcell.Screen
@@ -53,8 +54,8 @@ func (v Vector) Equals(vec Vector) bool {
 	return int(v.X) == int(vec.X) && int(v.Y) == int(vec.Y)
 }
 
-func (b *Ball) Init() {
-	b.Pos = Vector{X: 0, Y: 0} // this needs to be middle of screen, eventually
+func (b *Ball) Init(x float64, y float64) {
+	b.Pos = Vector{X: x, Y: y} // this needs to be middle of screen, eventually
 	veloX := float64((2 * rand.Intn(2) - 1) * 50)
 	veloY := float64(rand.Intn(100) - 50)
 	b.Velo = Vector{X: veloX, Y: veloY}
@@ -63,7 +64,7 @@ func (b *Ball) Init() {
 func (b *Ball) Move() {
 	lastUpdate := time.Now()
 	for {
-		time.Sleep(time.Second / 60)
+		time.Sleep(time.Millisecond * 16)
 		now := time.Now()
 		deltaTime := now.Sub(lastUpdate).Seconds()
 		lastUpdate = now
@@ -84,7 +85,6 @@ func NewGame() *Game {
 	}
 	
 	ball := &Ball{}
-	ball.Init()
 
 	newGame := &Game{
 		Ball: ball,
@@ -99,30 +99,30 @@ func NewGame() *Game {
 	return newGame
 }
 
-func (game *Game) Init() {
+func (g *Game) Init() {
 	log.Print("Starting new game!")
-	if err := game.Screen.Init(); err != nil {
+	if err := g.Screen.Init(); err != nil {
 		log.Fatalf("Failed to init screen: %v", err)
 	}
 
-	w, h := game.Screen.Size()
-	flW := float64(w)
-	flH := float64(w)
+	w, h := g.Screen.Size()
+	g.ScreenW = float64(w)
+	g.ScreenH = float64(h)
 
 	// initial positions for moving objects
-	game.Ball.Pos = Vector{flW/2, flH/2}
-	game.P1Pos = Vector{flW/8, flH/2}
-	game.P2Pos = Vector{(flW/8)*7, flW/2}
+	g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
+	g.P1Pos = Vector{g.ScreenW/8, g.ScreenH/2}
+	g.P2Pos = Vector{(g.ScreenW/8)*7, g.ScreenH/2}
 
-	game.P1Score = 0
-	game.P2Score = 0
+	g.P1Score = 0
+	g.P2Score = 0
 
-	game.yBound = h
 
-	game.Start()
+	g.Start()
 }
 
 func (game *Game) Start() {
+	go game.Ball.Move()
 	go game.checkForCollitions()
 	go game.listenForClose()
 	go game.performPlayerMoves()
@@ -180,15 +180,15 @@ func (g *Game) checkForCollitions() {
 		// score
 		case g.Ball.Pos.X < g.P1Pos.X:
 			g.P1Score ++
-			g.Ball.Init()
+			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
 		case g.Ball.Pos.X > g.P2Pos.X:
 			g.P2Score ++ 
-			g.Ball.Init()
+			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
 		// ball has hit paddle
 		case g.Ball.Pos.Equals(g.P1Pos) || g.Ball.Pos.Equals(g.P2Pos):
 			g.Ball.ChangeDir()
 		// ball has hit wall, there is no xBound as that would mean someone have scored
-		case int(g.Ball.Pos.Y) == g.yBound || int(g.Ball.Pos.Y) == 0: 
+		case int(g.Ball.Pos.Y) == int(g.ScreenH) || int(g.Ball.Pos.Y) == 0: 
 			g.Ball.ChangeDir()
 		}
 	}
