@@ -40,4 +40,6 @@ message GameStateResponse {
   Coordinate p2_pos = 3;
   int32 p1_score = 4;
   int32 p2_score = 5;
+  int32 screen_height = 6;
+  int32 screen_width = 7;
 }

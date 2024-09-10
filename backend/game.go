@@ -74,6 +74,7 @@ func (g *Game) Init() {
 		log.Fatalf("Failed to init screen: %v", err)
 	}
 
+	g.Screen.HideCursor()
 	w, h := g.Screen.Size()
 	g.ScreenW = float64(w)
 	g.ScreenH = float64(h)
@@ -98,6 +99,7 @@ func (game *Game) Start() {
 }
 
 func (game *Game) Quit() {
+	game.Screen.ShowCursor(int(game.ScreenW/2), int(game.ScreenH/2))
 	game.Screen.Fini()
 	os.Exit(0)
 }
@@ -146,19 +148,29 @@ func (game *Game) MovePaddle(playerID uuid.UUID, dir pb.Direction) {
 func (g *Game) checkForCollitions() {
 	for {
 		switch {
-		// score
-		case g.Ball.Pos.X < g.P1Pos.X:
-			g.P1Score ++
-			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
-		case g.Ball.Pos.X > g.P2Pos.X:
+		//player goals
+		case g.Ball.Pos.X > g.ScreenW: 
 			g.P2Score ++ 
 			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
-		// ball has hit paddle
-		case g.Ball.Pos.Equals(g.P1Pos) || g.Ball.Pos.Equals(g.P2Pos):
-			g.Ball.ChangeDir()
-		// ball has hit wall, there is no xBound as that would mean someone have scored
-		case int(g.Ball.Pos.Y) == int(g.ScreenH) || int(g.Ball.Pos.Y) == 0: 
-			g.Ball.ChangeDir()
+		case g.Ball.Pos.X < 0:
+			g.P1Score ++
+			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
+
+		//player paddles
+		case g.Ball.Pos.Equals(g.P1Pos) && g.Ball.LastHit != "p1":
+			g.Ball.ChangeDir("x")
+			g.Ball.LastHit = "p1"
+		case g.Ball.Pos.Equals(g.P2Pos) && g.Ball.LastHit != "p2":
+			g.Ball.ChangeDir("x")
+			g.Ball.LastHit = "p2"
+
+		// bounds of play area
+		case int(g.Ball.Pos.Y) >= int(g.ScreenH) && g.Ball.LastHit != "floor": 
+			g.Ball.ChangeDir("y")
+			g.Ball.LastHit = "floor"
+		case int(g.Ball.Pos.Y) <= 0 && g.Ball.LastHit != "roof": 
+			g.Ball.ChangeDir("y")
+			g.Ball.LastHit = "roof"
 		}
 	}
 }

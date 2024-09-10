@@ -76,6 +76,8 @@ func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongSe
 			},
 			P1Score: int32(gs.game.P1Score),
 			P2Score: int32(gs.game.P2Score),
+			ScreenWidth: int32(gs.game.ScreenW),
+			ScreenHeight: int32(gs.game.ScreenH),
 		}
 
 		if err := stream.Send(response); err != nil {

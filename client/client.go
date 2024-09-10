@@ -9,6 +9,7 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/google/uuid"
 	pb "github.com/orjanhsy/pong-in-terminal/proto"
+	"github.com/orjanhsy/pong-in-terminal/backend"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -19,6 +20,7 @@ type GameClient struct {
 	screen tcell.Screen
 	grpcClient pb.PongServiceClient
 	playerId uuid.UUID
+	ballPosHistory [3] backend.Vector // change to position
 }
 
 func NewGameClient(playerId uuid.UUID, grpcClient pb.PongServiceClient) *GameClient {
@@ -46,7 +48,7 @@ func (gc *GameClient) Start() {
 			log.Printf("Error recieving game state: %v", err)
 		}
 	}()
-
+	gc.drawBorders(192, 49)
 	select {}
 }
 
@@ -109,8 +111,20 @@ func (gc *GameClient) recieveGameState() error {
 	return nil
 }
 
+func (gc *GameClient) drawBorders(w int, h int) {
+	// roof and floor borders
+	for i := 0; i <= int(w); i++ {
+		gc.screen.SetContent(i, 0, '-', nil, tcell.StyleDefault.Bold(true))
+		gc.screen.SetContent(i, int(h), '-', nil, tcell.StyleDefault.Bold(true))
+	}
+	for i := 0; i <= int(h); i++ {
+		gc.screen.SetContent(0, i, '|', nil, tcell.StyleDefault.Bold(true))	
+		gc.screen.SetContent(int(w), i, '|', nil, tcell.StyleDefault.Bold(true))	
+	}
+}
+
+
 func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
-	gc.screen.Clear()
 
 	// menu
 	ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", state.BallPos.X, state.BallPos.Y)
@@ -128,9 +142,35 @@ func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 		gc.screen.SetContent(i, 2, r, nil, tcell.StyleDefault)
 	}
 
+	p1Score := fmt.Sprintf("P1Score: %d", state.P1Score)
+	for i, r := range p1Score {
+		gc.screen.SetContent(i, 3, r, nil, tcell.StyleDefault)
+	}
+
+	p2Score := fmt.Sprintf("P1Score: %d", state.P2Score)
+	for i, r := range p2Score {
+		gc.screen.SetContent(i, 4, r, nil, tcell.StyleDefault)
+	}
+
+	screenPos := fmt.Sprintf("ScreenDim: %d, %d", state.ScreenWidth, state.ScreenHeight)
+	for i, r := range screenPos {
+		gc.screen.SetContent(i, 5, r, nil, tcell.StyleDefault)
+	}
+
 	// ball
 	x,y := int(state.BallPos.X), int(state.BallPos.Y)
-	gc.screen.SetContent(x, y, '*', nil, tcell.StyleDefault)
+	for i := range len(gc.ballPosHistory) {
+		if i == 0 {
+			gc.screen.SetContent(int(gc.ballPosHistory[i].X), int(gc.ballPosHistory[i].Y), ' ', nil, tcell.StyleDefault)
+		}
+		gc.screen.SetContent(int(gc.ballPosHistory[i].X), int(gc.ballPosHistory[i].Y), 'O', nil, tcell.StyleDefault)
+	}
+	gc.screen.SetContent(x, y, 'O', nil, tcell.StyleDefault)
+
+	for i := range len(gc.ballPosHistory) - 2{
+		gc.ballPosHistory[i] = gc.ballPosHistory[i + 1]
+	}
+	gc.ballPosHistory[2] = backend.Vector{X: float64(state.BallPos.X), Y: float64(state.BallPos.Y)}
 
 	// paddles 
 	// p1
