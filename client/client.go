@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"fmt"
 
 	"github.com/gdamore/tcell"
 	"github.com/google/uuid"
@@ -115,49 +114,49 @@ func (gc *GameClient) drawBorders(w int, h int) {
 	// roof and floor borders
 	for i := 0; i < int(w); i++ {
 		gc.screen.SetContent(i, 0, '-', nil, tcell.StyleDefault.Bold(true))
-		gc.screen.SetContent(i, h - 1, '-', nil, tcell.StyleDefault.Bold(true))
+		gc.screen.SetContent(i, h, '-', nil, tcell.StyleDefault.Bold(true))
 	}
-	for i := 0; i < int(h); i++ {
+	for i := 0; i <= int(h); i++ {
 		gc.screen.SetContent(0, i, '|', nil, tcell.StyleDefault.Bold(true))	
-		gc.screen.SetContent(w - 1, i, '|', nil, tcell.StyleDefault.Bold(true))	
+		gc.screen.SetContent(w, i, '|', nil, tcell.StyleDefault.Bold(true))	
 	}
 }
 
 
 func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	gc.screen.Clear()
-	gc.drawBorders(191, 47)
+	gc.drawBorders(int(state.GetScreenWidth()), int(state.GetScreenHeight()))
 
 	// menu
-	ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", state.BallPos.X, state.BallPos.Y)
-	for i, r := range ballPos {
-		gc.screen.SetContent(i, 0, r, nil, tcell.StyleDefault)
-	}
-
-	p1Pos := fmt.Sprintf("Current p1-position: (%d, %d)\n", state.P1Pos.X, state.P1Pos.Y)
-	for i, r := range p1Pos {
-		gc.screen.SetContent(i, 1, r, nil, tcell.StyleDefault)
-	}
-
-	p2Pos := fmt.Sprintf("Current p2-position: (%d, %d)\n", state.P2Pos.X, state.P2Pos.Y)
-	for i, r := range p2Pos {
-		gc.screen.SetContent(i, 2, r, nil, tcell.StyleDefault)
-	}
-
-	p1Score := fmt.Sprintf("P1Score: %d", state.P1Score)
-	for i, r := range p1Score {
-		gc.screen.SetContent(i, 3, r, nil, tcell.StyleDefault)
-	}
-
-	p2Score := fmt.Sprintf("P1Score: %d", state.P2Score)
-	for i, r := range p2Score {
-		gc.screen.SetContent(i, 4, r, nil, tcell.StyleDefault)
-	}
-
-	screenPos := fmt.Sprintf("ScreenDim: %d, %d", state.ScreenWidth, state.ScreenHeight)
-	for i, r := range screenPos {
-		gc.screen.SetContent(i, 5, r, nil, tcell.StyleDefault)
-	}
+	// ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", state.BallPos.X, state.BallPos.Y)
+	// for i, r := range ballPos {
+	// 	gc.screen.SetContent(i, 0, r, nil, tcell.StyleDefault)
+	// }
+	//
+	// p1Pos := fmt.Sprintf("Current p1-position: (%d, %d)\n", state.P1Pos.X, state.P1Pos.Y)
+	// for i, r := range p1Pos {
+	// 	gc.screen.SetContent(i, 1, r, nil, tcell.StyleDefault)
+	// }
+	//
+	// p2Pos := fmt.Sprintf("Current p2-position: (%d, %d)\n", state.P2Pos.X, state.P2Pos.Y)
+	// for i, r := range p2Pos {
+	// 	gc.screen.SetContent(i, 2, r, nil, tcell.StyleDefault)
+	// }
+	//
+	// p1Score := fmt.Sprintf("P1Score: %d", state.P1Score)
+	// for i, r := range p1Score {
+	// 	gc.screen.SetContent(i, 3, r, nil, tcell.StyleDefault)
+	// }
+	//
+	// p2Score := fmt.Sprintf("P1Score: %d", state.P2Score)
+	// for i, r := range p2Score {
+	// 	gc.screen.SetContent(i, 4, r, nil, tcell.StyleDefault)
+	// }
+	//
+	// screenPos := fmt.Sprintf("ScreenDim: %d, %d", state.ScreenWidth, state.ScreenHeight)
+	// for i, r := range screenPos {
+	// 	gc.screen.SetContent(i, 5, r, nil, tcell.StyleDefault)
+	// }
 
 	// ball
 	x,y := int(state.BallPos.X), int(state.BallPos.Y)

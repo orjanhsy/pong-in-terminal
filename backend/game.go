@@ -43,10 +43,6 @@ const (
 	STOP
 )
 
-func (v Vector) Equals(vec Vector) bool {
-	return int(v.X) == int(vec.X) && int(v.Y) == int(vec.Y)
-}
-
 func NewGame() *Game {
 	screen, err := tcell.NewScreen()
 	if err != nil {
@@ -157,10 +153,10 @@ func (g *Game) checkForCollitions() {
 			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
 
 		//player paddles
-		case g.Ball.Pos.Equals(g.P1Pos) && g.Ball.LastHit != "p1":
+		case onPaddle(g.Ball.Pos, g.P1Pos) && g.Ball.LastHit != "p1":
 			g.Ball.ChangeDir("x")
 			g.Ball.LastHit = "p1"
-		case g.Ball.Pos.Equals(g.P2Pos) && g.Ball.LastHit != "p2":
+		case onPaddle(g.Ball.Pos, g.P2Pos) && g.Ball.LastHit != "p2":
 			g.Ball.ChangeDir("x")
 			g.Ball.LastHit = "p2"
 
@@ -173,4 +169,8 @@ func (g *Game) checkForCollitions() {
 			g.Ball.LastHit = "roof"
 		}
 	}
+}
+
+func onPaddle(ball Vector, pad Vector) bool {
+	return ball.Y <= pad.Y && ball.Y >= pad.Y - 3.0 && ball.X >= pad.X - 1 && ball.X <= pad.X + 1
 }
