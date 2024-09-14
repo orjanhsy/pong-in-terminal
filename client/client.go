@@ -125,6 +125,7 @@ func (gc *GameClient) drawBorders(w int, h int) {
 
 
 func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
+	gc.screen.Clear()
 
 	// menu
 	ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", state.BallPos.X, state.BallPos.Y)
@@ -159,19 +160,7 @@ func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 
 	// ball
 	x,y := int(state.BallPos.X), int(state.BallPos.Y)
-	for i := range len(gc.ballPosHistory) {
-		if i == 0 {
-			gc.screen.SetContent(int(gc.ballPosHistory[i].X), int(gc.ballPosHistory[i].Y), ' ', nil, tcell.StyleDefault)
-		}
-		gc.screen.SetContent(int(gc.ballPosHistory[i].X), int(gc.ballPosHistory[i].Y), 'O', nil, tcell.StyleDefault)
-	}
 	gc.screen.SetContent(x, y, 'O', nil, tcell.StyleDefault)
-
-	for i := range len(gc.ballPosHistory) - 2{
-		gc.ballPosHistory[i] = gc.ballPosHistory[i + 1]
-	}
-	gc.ballPosHistory[2] = backend.Vector{X: float64(state.BallPos.X), Y: float64(state.BallPos.Y)}
-
 	// paddles 
 	// p1
 	x, y = int(state.P1Pos.X), int(state.P1Pos.Y)
