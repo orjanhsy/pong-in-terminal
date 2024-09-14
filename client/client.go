@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
+	"fmt"
 
 	"github.com/gdamore/tcell"
 	"github.com/google/uuid"
@@ -113,19 +113,20 @@ func (gc *GameClient) recieveGameState() error {
 
 func (gc *GameClient) drawBorders(w int, h int) {
 	// roof and floor borders
-	for i := 0; i <= int(w); i++ {
+	for i := 0; i < int(w); i++ {
 		gc.screen.SetContent(i, 0, '-', nil, tcell.StyleDefault.Bold(true))
-		gc.screen.SetContent(i, int(h), '-', nil, tcell.StyleDefault.Bold(true))
+		gc.screen.SetContent(i, h - 1, '-', nil, tcell.StyleDefault.Bold(true))
 	}
-	for i := 0; i <= int(h); i++ {
+	for i := 0; i < int(h); i++ {
 		gc.screen.SetContent(0, i, '|', nil, tcell.StyleDefault.Bold(true))	
-		gc.screen.SetContent(int(w), i, '|', nil, tcell.StyleDefault.Bold(true))	
+		gc.screen.SetContent(w - 1, i, '|', nil, tcell.StyleDefault.Bold(true))	
 	}
 }
 
 
 func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	gc.screen.Clear()
+	gc.drawBorders(191, 47)
 
 	// menu
 	ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", state.BallPos.X, state.BallPos.Y)
