@@ -5,7 +5,7 @@ package pb;
 option go_package = "github.com/orjanhsy/pong-in-terminal/proto/pb";
 
 service PongService {
-  rpc UpdatePaddlePosition(PaddleUpdateRequest) returns (PaddleUpdateResponse) {}
+  rpc UpdatePaddleDirection(PaddleUpdateRequest) returns (PaddleUpdateResponse) {}
 
   rpc StreamGameState(GameStateRequest) returns (stream GameStateResponse) {}
 }

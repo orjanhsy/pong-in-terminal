@@ -19,15 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	PongService_UpdatePaddlePosition_FullMethodName = "/pb.PongService/UpdatePaddlePosition"
-	PongService_StreamGameState_FullMethodName      = "/pb.PongService/StreamGameState"
+	PongService_UpdatePaddleDirection_FullMethodName = "/pb.PongService/UpdatePaddleDirection"
+	PongService_StreamGameState_FullMethodName       = "/pb.PongService/StreamGameState"
 )
 
 // PongServiceClient is the client API for PongService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PongServiceClient interface {
-	UpdatePaddlePosition(ctx context.Context, in *PaddleUpdateRequest, opts ...grpc.CallOption) (*PaddleUpdateResponse, error)
+	UpdatePaddleDirection(ctx context.Context, in *PaddleUpdateRequest, opts ...grpc.CallOption) (*PaddleUpdateResponse, error)
 	StreamGameState(ctx context.Context, in *GameStateRequest, opts ...grpc.CallOption) (PongService_StreamGameStateClient, error)
 }
 
@@ -39,9 +39,9 @@ func NewPongServiceClient(cc grpc.ClientConnInterface) PongServiceClient {
 	return &pongServiceClient{cc}
 }
 
-func (c *pongServiceClient) UpdatePaddlePosition(ctx context.Context, in *PaddleUpdateRequest, opts ...grpc.CallOption) (*PaddleUpdateResponse, error) {
+func (c *pongServiceClient) UpdatePaddleDirection(ctx context.Context, in *PaddleUpdateRequest, opts ...grpc.CallOption) (*PaddleUpdateResponse, error) {
 	out := new(PaddleUpdateResponse)
-	err := c.cc.Invoke(ctx, PongService_UpdatePaddlePosition_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, PongService_UpdatePaddleDirection_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (x *pongServiceStreamGameStateClient) Recv() (*GameStateResponse, error) {
 // All implementations must embed UnimplementedPongServiceServer
 // for forward compatibility
 type PongServiceServer interface {
-	UpdatePaddlePosition(context.Context, *PaddleUpdateRequest) (*PaddleUpdateResponse, error)
+	UpdatePaddleDirection(context.Context, *PaddleUpdateRequest) (*PaddleUpdateResponse, error)
 	StreamGameState(*GameStateRequest, PongService_StreamGameStateServer) error
 	mustEmbedUnimplementedPongServiceServer()
 }
@@ -93,8 +93,8 @@ type PongServiceServer interface {
 type UnimplementedPongServiceServer struct {
 }
 
-func (UnimplementedPongServiceServer) UpdatePaddlePosition(context.Context, *PaddleUpdateRequest) (*PaddleUpdateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdatePaddlePosition not implemented")
+func (UnimplementedPongServiceServer) UpdatePaddleDirection(context.Context, *PaddleUpdateRequest) (*PaddleUpdateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePaddleDirection not implemented")
 }
 func (UnimplementedPongServiceServer) StreamGameState(*GameStateRequest, PongService_StreamGameStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGameState not implemented")
@@ -112,20 +112,20 @@ func RegisterPongServiceServer(s grpc.ServiceRegistrar, srv PongServiceServer) {
 	s.RegisterService(&PongService_ServiceDesc, srv)
 }
 
-func _PongService_UpdatePaddlePosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PongService_UpdatePaddleDirection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PaddleUpdateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PongServiceServer).UpdatePaddlePosition(ctx, in)
+		return srv.(PongServiceServer).UpdatePaddleDirection(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PongService_UpdatePaddlePosition_FullMethodName,
+		FullMethod: PongService_UpdatePaddleDirection_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PongServiceServer).UpdatePaddlePosition(ctx, req.(*PaddleUpdateRequest))
+		return srv.(PongServiceServer).UpdatePaddleDirection(ctx, req.(*PaddleUpdateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -159,8 +159,8 @@ var PongService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PongServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UpdatePaddlePosition",
-			Handler:    _PongService_UpdatePaddlePosition_Handler,
+			MethodName: "UpdatePaddleDirection",
+			Handler:    _PongService_UpdatePaddleDirection_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

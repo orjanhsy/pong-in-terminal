@@ -1,8 +1,8 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"context"
 	"log"
 	"net"
 	"time"
@@ -90,18 +90,18 @@ func (gs *GameServer) StreamGameState(req *pb.GameStateRequest, stream pb.PongSe
 	}
 }
 
-
-func (gs *GameServer) UpdatePaddlePosition(ctx context.Context, req *pb.PaddleUpdateRequest) (*pb.PaddleUpdateResponse, error) {
-	id, err :=	uuid.Parse(req.PlayerId)
+func (gs *GameServer) UpdatePaddleDirection(ctx context.Context, req *pb.PaddleUpdateRequest) (*pb.PaddleUpdateResponse, error) {
+	id, err := uuid.Parse(req.PlayerId)
 	if err != nil {
-		log.Fatalf("Failed to parse ID when updateing paddle: %v", err)
+		log.Fatalf("Failed to parse playerId in paddleUpdateReq: %v", err)
 	}
-  gs.game.MoveChannel <- backend.Move{
-      PlayerID: id,
-      Direction: req.Direction,
-  }
 
-  return &pb.PaddleUpdateResponse{Status: "Paddle position updated successfully"}, nil
+	gs.game.DirUpdates <- backend.Move {
+		PlayerID: id,
+		Direction: req.Direction,
+	}
+
+	return &pb.PaddleUpdateResponse{Status: "Paddle direction succesfully updated"}, nil
 }
 
 func main() {

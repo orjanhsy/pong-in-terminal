@@ -3,6 +3,7 @@ package backend
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell"
 	"github.com/google/uuid"
@@ -13,15 +14,17 @@ type Game struct {
 	Ball *Ball
 	P1Pos Vector 
 	P2Pos Vector 
+	P1Dir Direction
+	P2Dir Direction
 	P1Score int
 	P2Score int
 	P1 uuid.UUID
 	P2 uuid.UUID
 
+	DirUpdates chan Move
+
 	ScreenH float64
 	ScreenW float64
-
-	MoveChannel chan Move
 	Screen tcell.Screen
 }
 
@@ -55,9 +58,11 @@ func NewGame() *Game {
 		Ball: ball,
 		P1Pos: Vector{0, 0},
 		P2Pos: Vector{0, 0},
+		P1Dir: STOP,
+		P2Dir: STOP,
 		P1Score: 0,
 		P2Score: 0,
-		MoveChannel: make(chan Move),
+		DirUpdates: make(chan Move),
 		Screen: screen,
 	}
 
@@ -83,28 +88,21 @@ func (g *Game) Init() {
 	g.P1Score = 0
 	g.P2Score = 0
 
-
 	g.Start()
 }
 
 func (game *Game) Start() {
 	go game.Ball.Move()
 	go game.checkForCollitions()
+	go game.UpdatePaddleDirections()
 	go game.listenForClose()
-	go game.performPlayerMoves()
+	go game.MovePaddles()
 }
 
 func (game *Game) Quit() {
 	game.Screen.ShowCursor(int(game.ScreenW/2), int(game.ScreenH/2))
 	game.Screen.Fini()
 	os.Exit(0)
-}
-
-func (game *Game) performPlayerMoves() {
-	for {
-		move := <- game.MoveChannel
-		game.MovePaddle(move.PlayerID, move.Direction)
-	}
 }
 
 func (game *Game) listenForClose() {
@@ -120,24 +118,42 @@ func (game *Game) listenForClose() {
 	}
 }
 
-func (game *Game) MovePaddle(playerID uuid.UUID, dir pb.Direction) {
-	switch playerID {
-	case game.P2:
-		switch dir {
-		case pb.Direction_UP:
-			game.P1Pos.Y --
-		case pb.Direction_DOWN:
-			game.P1Pos.Y ++
-		default:
+func (g *Game) UpdatePaddleDirections() {
+	for	{
+		move := <- g.DirUpdates
+		switch move.PlayerID {
+		case g.P1:
+			g.P1Dir = Direction(move.Direction)
+		case g.P2:
+			g.P2Dir = Direction(move.Direction)
 		}
-	case game.P1:
-		switch dir {
-		case pb.Direction_UP:
-			game.P2Pos.Y --
-		case pb.Direction_DOWN:
-			game.P2Pos.Y ++
-		default:
+	}
+}
+
+func (game *Game) MovePaddles() {
+	for {
+		switch game.P1Dir {
+		case UP:
+			if game.P1Pos.Y > 4 {
+				game.P1Pos.Y --
+			}
+		case DOWN:
+			if game.P1Pos.Y < game.ScreenH - 3{
+				game.P1Pos.Y ++
+			}
 		}
+		switch game.P2Dir {
+		case UP:
+			if game.P2Pos.Y > 4 {
+				game.P2Pos.Y --
+			}
+		case DOWN:
+			if game.P2Pos.Y < game.ScreenH - 3{
+				game.P2Pos.Y ++
+			}
+		}
+
+		time.Sleep(time.Second / 60)
 	}
 }
 

@@ -1,7 +1,6 @@
 package main
 
-import (
-	"context"
+import ( "context"
 	"log"
 	"os"
 
@@ -19,7 +18,7 @@ type GameClient struct {
 	screen tcell.Screen
 	grpcClient pb.PongServiceClient
 	playerId uuid.UUID
-	ballPosHistory [3] backend.Vector // change to position
+	ballPosHistory [3] backend.Vector 
 }
 
 func NewGameClient(playerId uuid.UUID, grpcClient pb.PongServiceClient) *GameClient {
@@ -70,6 +69,8 @@ func (gc *GameClient) listenForPlayerInput() {
 				gc.sendPaddleUpdate(pb.Direction_UP)	
 			case ev.Key() == tcell.KeyDown, ev.Rune() == 'j':
 				gc.sendPaddleUpdate(pb.Direction_DOWN)
+			case ev.Rune() == ' ':
+				gc.sendPaddleUpdate(pb.Direction_STOP)
 			case ev.Key() == tcell.KeyCtrlC, ev.Rune() == 'q':
 				gc.Quit()
 				return
@@ -84,7 +85,7 @@ func (gc *GameClient) sendPaddleUpdate(dir pb.Direction) {
 		Direction: dir,
 	}
 
-	_, err := gc.grpcClient.UpdatePaddlePosition(context.Background(), req)
+	_, err := gc.grpcClient.UpdatePaddleDirection(context.Background(), req)
 	if err != nil {
 		log.Fatalf("Could not update paddle position: %v", err)
 	}
