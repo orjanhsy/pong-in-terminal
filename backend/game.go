@@ -134,6 +134,7 @@ func (g *Game) UpdatePaddleDirections() {
 	}
 }
 
+
 func (game *Game) MovePaddles() {
 	for {
 		switch game.P1Dir {

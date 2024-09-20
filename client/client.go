@@ -1,6 +1,8 @@
 package main
 
-import ( "context"
+import ( 
+	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -146,24 +148,21 @@ func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	// 	gc.screen.SetContent(i, 2, r, nil, tcell.StyleDefault)
 	// }
 	//
-	// p1Score := fmt.Sprintf("P1Score: %d", state.P1Score)
-	// for i, r := range p1Score {
-	// 	gc.screen.SetContent(i, 3, r, nil, tcell.StyleDefault)
-	// }
-	//
-	// p2Score := fmt.Sprintf("P1Score: %d", state.P2Score)
-	// for i, r := range p2Score {
-	// 	gc.screen.SetContent(i, 4, r, nil, tcell.StyleDefault)
-	// }
-	//
+
 	// screenPos := fmt.Sprintf("ScreenDim: %d, %d", state.ScreenWidth, state.ScreenHeight)
 	// for i, r := range screenPos {
 	// 	gc.screen.SetContent(i, 5, r, nil, tcell.StyleDefault)
 	// }
 
 	// scores
-	gc.screen.SetContent(sw / 10, 10, rune(state.P1Score), nil, tcell.StyleDefault)	
-	gc.screen.SetContent((sw / 10) * 9, 10, rune(state.P2Score), nil, tcell.StyleDefault)	
+	p1Score := fmt.Sprintf("%d", state.P1Score)
+	for i, r := range p1Score {
+		gc.screen.SetContent((sw / 16) * 18 + i, 4, r, nil, tcell.StyleDefault)
+	}
+	p2Score := fmt.Sprintf("%d", state.P2Score)
+	for i, r := range p2Score {
+		gc.screen.SetContent(sw / 16 + i, 4, r, nil, tcell.StyleDefault)
+	}
 
 	// ball
 	x,y := int(state.BallPos.X), int(state.BallPos.Y)
