@@ -76,6 +76,12 @@ func (g *Game) Init() {
 	}
 
 	g.Screen.HideCursor()
+	g.ResetValues()
+
+	g.Start()
+}
+
+func (g *Game) ResetValues() {
 	w, h := g.Screen.Size()
 	g.ScreenW = float64(w)
 	g.ScreenH = float64(h)
@@ -87,8 +93,6 @@ func (g *Game) Init() {
 
 	g.P1Score = 0
 	g.P2Score = 0
-
-	g.Start()
 }
 
 func (game *Game) Start() {
@@ -153,7 +157,7 @@ func (game *Game) MovePaddles() {
 			}
 		}
 
-		time.Sleep(time.Second / 60)
+		time.Sleep(time.Second / 40)
 	}
 }
 
@@ -163,9 +167,19 @@ func (g *Game) checkForCollitions() {
 		//player goals
 		case g.Ball.Pos.X > g.ScreenW: 
 			g.P2Score ++ 
+			if g.P2Score == 10 {
+				g.ResetValues()
+				continue
+			}
+
 			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
 		case g.Ball.Pos.X < 0:
 			g.P1Score ++
+			if g.P1Score == 10 {
+				g.ResetValues()
+				continue
+			}
+
 			g.Ball.Init(g.ScreenW/2, g.ScreenH/2)
 
 		//player paddles

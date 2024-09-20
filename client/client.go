@@ -126,7 +126,9 @@ func (gc *GameClient) drawBorders(w int, h int) {
 
 func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	gc.screen.Clear()
-	gc.drawBorders(int(state.GetScreenWidth()), int(state.GetScreenHeight()))
+	sw := int(state.GetScreenWidth())
+	sh :=  int(state.GetScreenHeight())
+	gc.drawBorders(sw, sh)
 
 	// menu
 	// ballPos := fmt.Sprintf("Current ball-position: (%d, %d)\n", state.BallPos.X, state.BallPos.Y)
@@ -158,6 +160,10 @@ func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	// for i, r := range screenPos {
 	// 	gc.screen.SetContent(i, 5, r, nil, tcell.StyleDefault)
 	// }
+
+	// scores
+	gc.screen.SetContent(sw / 10, 10, rune(state.P1Score), nil, tcell.StyleDefault)	
+	gc.screen.SetContent((sw / 10) * 9, 10, rune(state.P2Score), nil, tcell.StyleDefault)	
 
 	// ball
 	x,y := int(state.BallPos.X), int(state.BallPos.Y)

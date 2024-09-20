@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"math"
 	"math/rand"
 	"time"
 )
@@ -23,7 +24,14 @@ func (b *Ball) Init(x float64, y float64) {
 
 func (b *Ball) Move() {
 	for {
-		time.Sleep(time.Second / 40)
+		if b.Velo.Y > b.Velo.X {
+			// Account for different speed when moving diagonally
+			sleepFactor := math.Sqrt(math.Pow(b.Velo.X, 2) + math.Pow(b.Velo.Y, 2))
+			time.Sleep((time.Second / 40) * time.Duration(sleepFactor))
+		} else {
+			time.Sleep((time.Second / 40))
+		}
+
 		b.Pos.X += b.Velo.X
 		b.Pos.Y += b.Velo.Y
 	}
