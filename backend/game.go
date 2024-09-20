@@ -172,5 +172,5 @@ func (g *Game) checkForCollitions() {
 }
 
 func onPaddle(ball Vector, pad Vector) bool {
-	return ball.Y <= pad.Y && ball.Y >= pad.Y - 3.0 && ball.X >= pad.X - 1 && ball.X <= pad.X + 1
+	return ball.Y <= pad.Y + 2 && ball.Y >= pad.Y - 2 && ball.X >= pad.X - 1 && ball.X <= pad.X + 1
 }

@@ -161,15 +161,16 @@ func (gc *GameClient) drawGameState(state *pb.GameStateResponse) {
 	// ball
 	x,y := int(state.BallPos.X), int(state.BallPos.Y)
 	gc.screen.SetContent(x, y, 'O', nil, tcell.StyleDefault)
+
 	// paddles 
 	// p1
 	x, y = int(state.P1Pos.X), int(state.P1Pos.Y)
-	for i := -1; i <= 1; i++ {
+	for i := -2; i <= 2; i++ {
 		gc.screen.SetContent(x, y+i, '|', nil, tcell.StyleDefault)
 	}
 	//p2
 	x, y = int(state.P2Pos.X), int(state.P2Pos.Y)
-	for i := -1; i <= 1; i++ {
+	for i := -2; i <= 2; i++ {
 		gc.screen.SetContent(x, y+i, '|', nil, tcell.StyleDefault)
 	}
 
